@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Post-it</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500&display=swap" rel="stylesheet">
+
+	<link href="index.css" rel="stylesheet">
+<script>
+	// 사용자가 내용을 올바르게 입력하였는지 확인합니다.
+	function isValidContents(contents) {
+		if (contents === '') {
+			alert('제대로 입력해주세요');
+			return false;
+		}
+		return true;
+	}
+
+    // 비밀번호 입력 받아오기
+	function getPassword(a, b) {
+		let arr = [];
+		let j=0;
+        for(let i=a; i < b; i++) {
+            arr[j] = $("input[name=char"+i+"]").val();
+            if(arr[j] === '') {
+                alert('비밀번호를 입력해주세요');
+                return false;
+			}
+            j++;
+		}
+        return arr.join('');
+	}
+
+    // 비밀번호 일치 확인하기
+	function checkPassword(id, password) {
+        $(".checkPassword").off("click").click(function () {
+			let checkPassword = getPassword(4, 8);
+            if(checkPassword === password) {
+                $('.editing').addClass('on');
+                $('.details').removeClass('on');
+                $("input").val('');
+                $('.detailsPasswordArea').removeClass("on");
+                addEdit(id);
+            }else {
+				alert("비밀번호가 일치하지 않습니다");
+			}
+		})
+	}
+
+	////////////////////////////////////////////////////////////////////////
+
+	$(document).ready(function () {
+		// HTML 문서를 로드할 때마다 실행합니다.
+		getPosts();
+	})
+
+	// 메모를 불러와서 보여줍니다.
+	function getPosts() {
+		$.ajax({
+			type: 'GET',
+			url: '/api/postit',
+			success: function (response) {
+				for (let i = 0; i < response.length; i++) {
+					let message = response[i];
+					let id = message['id'];
+					let username = message['username'];
+                    let title = message['title'];
+					let modifiedAt = message['modifiedAt'];
+					addPostList(id, username, title, modifiedAt);
+				}
+			}
+		})
+	}
+	// 메모 하나를 HTML로 만들어서 postlist에 붙입니다.
+	function addPostList(id, username, title, modifiedAt) {
+		// 1. HTML 태그를 만듭니다.
+		let temphtml = `<div class="item">
+							<div class="content" onclick='$(".details").addClass("on"); getDetails("${id}")'>
+								<div class="usernameDate">
+									<div id="${id}-username" class="username">${username}</div>
+									<div id="${id}-date" class="date">${modifiedAt}</div>
+								</div>
+								<p id="${id}-title" class="title">${title}</p>
+								</div>
+							</div>`;
+		// 2. postlist 에 HTML을 붙인다.
+		$('.postList').append(temphtml);
+	}
+
+	// 메모를 생성합니다.
+	function writePost() {
+		// 1. 작성한 메모를 불러옵니다.
+		let title = $('textarea[name="title"]').val();
+		let memo = $('textarea[name="memo"]').val();
+        let username = $('textarea[name="username"]').val();
+        let password = getPassword(0, 4);
+		// 2. 작성한 메모가 올바른지 isValidContents 함수를 통해 확인합니다.
+		if (isValidContents(memo) === false || isValidContents(username) === false) {
+			return;
+		}
+		// 4. 전달할 data JSON으로 만듭니다.
+		let data = {'username': username, 'password': password, 'title': title, 'memo': memo};
+		// 5. POST /api/postit 에 data를 전달합니다.
+		$.ajax({
+			type: "POST",
+			url: "/api/postit",
+			contentType: "application/json", // JSON 형식으로 전달함을 알리기
+			data: JSON.stringify(data),
+			success: function (response) {
+				alert('메시지가 성공적으로 작성되었습니다.');
+				window.location.reload();
+			}
+		});
+	}
+
+    // ID에 맞는 메모의 값 가져오기.
+    function getDetails(id) {
+        $.ajax({
+            type: 'GET',
+            url: `/api/postit/${id}`,
+            success: function (response) {
+				let id = response["id"];
+				let username = response["username"];
+				let title = response["title"];
+				let memo = response["memo"];
+                let password = response["password"];
+                addDetails(id, username, title, memo, password);
+            }
+        })
+    }
+    // 메모 상세 모달창으로 전달합니다.
+    function addDetails(id, username, title, memo, password) {
+        $(`.detailsTitle`).text(title);
+        memo = memo.replaceAll("\n", "<br>");
+        memo = memo.replaceAll(" ", "&nbsp;");
+        $(`.detailsMemo`).html(memo);
+        $(`.detailsUsername`).text(username);
+        checkPassword(id, password);
+    }
+    // 수정 버튼을 눌렀을 때, 기존 작성 내용을 textarea 에 전달합니다.
+    function addEdit(id) {
+        let title = $(`#${id}-title`).text();
+        let memo = $(`.detailsMemo`).html();
+        memo = memo.replaceAll("<br>", "\n");
+        memo = memo.replaceAll("&nbsp;", " ");
+        let username = $(`#${id}-username`).text();
+        $(`.editTitleArea`).val(title);
+        $(`.editMemoArea`).val(memo);
+        $(`.usernameFixed`).text(username);
+        submitEdit(id);
+        deletePost(id);
+    }
+
+	// 메모를 수정합니다.
+	function submitEdit(id) {
+        $(".editButton").click(function() {
+			// 1. 작성 대상 메모의 title과 memo 를 확인합니다.
+			let title = $(`.editTitleArea`).val();
+			let memo = $(`.editMemoArea`).val();
+			// 2. 작성한 메모가 올바른지 isValidContents 함수를 통해 확인합니다.
+			if (isValidContents(memo) === false) {
+				return;
+			}
+			// 3. 전달할 data JSON으로 만듭니다.
+			let data = {'title': title, 'memo': memo};
+			// 4. PATCH /api/postit/{id} 에 data를 전달합니다.
+			$.ajax({
+				type: "PATCH",
+				url: `/api/postit/${id}`,
+				contentType: "application/json",
+				data: JSON.stringify(data),
+				success: function (response) {
+					alert('메시지 변경에 성공하였습니다.');
+					window.location.reload();
+				}
+			});
+		})
+	}
+
+	// 메모를 삭제합니다.
+	function deletePost(id) {
+        $(".delete").click(function() {
+            let deleteCheck = confirm("삭제하시겠습니까?");
+            if(deleteCheck) {
+				// 1. DELETE /api/postit/{id} 에 요청해서 메모를 삭제합니다.
+				$.ajax({
+					type: "DELETE",
+					url: `/api/postit/${id}`,
+					success: function (response) {
+						alert('메시지 삭제에 성공하였습니다.');
+						window.location.reload();
+					}
+				});
+			}
+		})
+	}
+
+    /////////////////////////////////////////////////////////////////////////////////////
+	// 생성시 비밀번호 input 다음으로 자동 넘기기
+    $(function() {
+        $("input").keyup (function () {
+            let charLimit = $(this).attr("maxlength");
+            if (this.value.length >= charLimit) {
+                $(this).next("input").focus();
+                return false;
+            }
+        }).focus (function () {
+            $(this).val('');
+            return false;
+        });
+    });
+
+    // 비밀번호 확인 숨기기
+	$(function () {
+        $(".detailsBackground, .checkPassword").click (function() {
+		   if($(".details").hasClass("on") === false) {
+			   $(".detailsPasswordArea").removeClass("on");
+			   return false;
+		   }
+	   });
+	});
+
+</script>
+</head>
+
+<body>
+<!--------------------작성 모달창-------------------->
+<div class="posting">
+	<div class="postingBackground" onclick='$(".posting").removeClass("on")'></div>
+	<div class="postingCard">
+		<div class="postingTop">
+			<textarea class="titleArea" maxlength="25" placeholder="제목을 입력해주세요 (30글자)" name="title"
+					  onKeyPress="javascript: if (event.keyCode==13) return false;"></textarea>
+			<div class="namePassword">
+				<textarea class="nameArea" maxlength="10" placeholder="이름 (10글자)" name="username"
+						  onKeyPress="javascript: if (event.keyCode==13) return false;">익명의 포스트잇</textarea>
+				<div class="passwordArea">
+					<input maxlength="1" type="tel" class="password" name="char0" data-index="0"
+						   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+					<input maxlength="1" type="tel" class="password" name="char1" data-index="1"
+						   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+					<input maxlength="1" type="tel" class="password" name="char2" data-index="2"
+						   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+					<input maxlength="1" type="tel" class="password" name="char3" data-index="3"
+						   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+				</div>
+			</div>
+		</div>
+        <textarea class="memoArea" placeholder="내용을 입력하세요" name="memo"></textarea>
+		<div class="buttonPosition">
+			<button class="cancelButton" onclick="window.location.reload()">취소</button>
+			<button class="postButton" onclick='writePost()'>Post It !</button>
+		</div>
+	</div>
+</div>
+<!--------------------작성 모달창 end-------------------->
+<!--------------------상세 모달창-------------------->
+<div class="details">
+	<div class="detailsBackground" onclick='$(".details").removeClass("on")'></div>
+	<div class="detailsCard">
+		<div class="titleMemo">
+			<div class="detailsTitle"></div>
+		</div>
+		<div class="detailsMemo"></div>
+		<img class="detailsEdit" src="images/edit.png" onclick="$('.detailsPasswordArea').toggleClass('on')">
+		<div class="detailsUsername"></div>
+		<div class="detailsPasswordArea">
+			<input maxlength="1" type="tel" class="detailsPassword" name="char4" data-index="0"
+				   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+			<input maxlength="1" type="tel" class="detailsPassword" name="char5" data-index="1"
+				   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+			<input maxlength="1" type="tel" class="detailsPassword" name="char6" data-index="2"
+				   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+			<input maxlength="1" type="tel" class="detailsPassword" name="char7" data-index="3"
+				   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+			<div class="checkPassword">확인</div>
+		</div>
+	</div>
+</div>
+<!--------------------상세 모달창 end-------------------->
+<!--------------------수정 모달창-------------------->
+<div class="editing">
+	<div class="editingBackground" onclick='$(".editing").removeClass("on")'></div>
+	<div class="editingCard">
+		<div class="editingTop">
+			<textarea class="editTitleArea" maxlength="25" placeholder="제목을 입력해주세요 (30글자)" name="title"
+					  onKeyPress="javascript: if (event.keyCode==13) return false;"></textarea>
+			<div>
+				<div class="nameFixed"></div>
+				<img class="delete" src="images/delete.png">
+			</div>
+		</div>
+		<textarea class="editMemoArea" placeholder="내용을 입력하세요" name="memo"></textarea>
+		<div class="buttonPosition">
+			<button class="cancelButton" onclick="window.location.reload()">취소</button>
+			<button class="editButton">수정하기</button>
+		</div>
+	</div>
+</div>
+<!--------------------수정 모달창 end-------------------->
+<!--------------------main-------------------->
+<div class="mainContainer">
+	<div id="post-box" class="postList">
+		<div class="item">
+			<div class="addContent" onclick='$(".posting").addClass("on")'>
+				<p class="addIcon">+</p>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

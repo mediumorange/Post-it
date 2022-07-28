@@ -1,0 +1,342 @@
+* {
+    font-family: 'Noto Sans KR', sans-serif;
+}
+button {
+    cursor: pointer;
+}
+
+.posting {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0; right: 0; bottom: 0; left: 0;
+}
+.posting.on {
+    display: flex;
+}
+.postingBackground{
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.50);
+    top: 0; right: 0; bottom: 0; left: 0;
+}
+.postingCard {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 50vw;
+    height: 500px;
+    border-radius: 20px;
+}
+.postingTop {
+    display: flex;
+    width: 95%;
+}
+.titleArea {
+    resize: none;
+    box-sizing: border-box;
+    padding: 20px 20px 0 20px;
+    border-radius: 10px;
+    width: 95%;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    font-size: 1rem;
+}
+.nameArea {
+    resize: none;
+    box-sizing: border-box;
+    padding: 5px 10px 0 10px;
+    border-radius: 5px;
+    height: 30px;
+    width: 155px;
+}
+.passwordArea {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.password {
+    width: 30px;
+    height: 30px;
+    border: 1px solid lightgray;
+    border-radius: 3px;
+    text-align: center;
+    font-size: 1.3rem;
+    margin-right: 2px;
+}
+.memoArea {
+    resize: none;
+    box-sizing: border-box;
+    padding: 20px;
+    border-radius: 10px;
+    width: 95%;
+    height: 50%;
+}
+.buttonPosition {
+    width: 100%;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+.cancelButton {
+    width: 25%;
+    height: 60px;
+    margin-right: 10px;
+    border: 1px solid;
+    border-radius: 10px;
+    background-color: white;
+}
+.cancelButton:hover {
+    background-color: #00000010;
+}
+.postButton {
+    width: 30%;
+    height: 60px;
+    border: 1px solid;
+    border-radius: 10px;
+    background-color: lightsalmon;
+}
+.postButton:hover {
+    background-color: #f78a5e;
+}
+
+.details {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0; right: 0; bottom: 0; left: 0;
+}
+.details.on {
+    display: flex;
+}
+.detailsBackground {
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.50);
+    top: 0; right: 0; bottom: 0; left: 0;
+}
+.detailsCard {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 50vw;
+    height: 500px;
+    border-radius: 20px;
+}
+.detailsUsername {
+    position: absolute;
+    top: 10px;
+    left: 30px;
+}
+.detailsTitle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 10px 0 10px;
+    height: 75%;
+    font-size: 1.5vw;
+    word-break: keep-all;
+}
+.detailsMemo {
+    overflow-y: scroll;
+    padding: 20px;
+    border-radius: 10px;
+    width: 95%;
+    height: 65%;
+}
+.detailsMemo::-webkit-scrollbar {
+    display: none;
+}
+.detailsEdit {
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 30px;
+    width: 18px;
+    height: 18px;
+}
+.detailsPasswordArea {
+    display: none;
+    position: absolute;
+    top: 40px;
+    right: 20px;
+}
+.detailsPasswordArea.on {
+    display: flex;
+}
+.detailsPassword {
+    width: 30px;
+    height: 30px;
+    border: 1px solid lightgray;
+    border-radius: 3px;
+    text-align: center;
+    font-size: 1.3rem;
+    margin-right: 2px;
+}
+.checkPassword {
+    width: 40px;
+    text-align: center;
+    cursor: pointer;
+}
+.checkPassword:hover {
+    color: gray;
+}
+.checkPassword:active {
+    color: black;
+}
+
+.editing {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0; right: 0; bottom: 0; left: 0;
+}
+.editing.on {
+    display: flex;
+}
+.editingBackground{
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.50);
+    top: 0; right: 0; bottom: 0; left: 0;
+}
+.editingCard {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 50vw;
+    height: 500px;
+    border-radius: 20px;
+}
+.editingTop {
+    display: flex;
+    width: 95%;
+}
+.editTitleArea {
+    resize: none;
+    box-sizing: border-box;
+    padding: 20px 20px 0 20px;
+    border-radius: 10px;
+    width: 95%;
+    margin-bottom: 10px;
+    margin-right: 10px;
+    font-size: 1rem;
+}
+.nameFixed {
+    box-sizing: border-box;
+    padding: 5px 10px 0 10px;
+    height: 30px;
+    width: 155px;
+    font-size: 1vw;
+}
+.editMemoArea {
+    resize: none;
+    box-sizing: border-box;
+    padding: 20px;
+    border-radius: 10px;
+    width: 95%;
+    height: 50%;
+}
+.editButton {
+    width: 30%;
+    height: 60px;
+    border: 1px solid;
+    border-radius: 10px;
+    background-color: lightsalmon;
+}
+.editButton:hover {
+    background-color: #f78a5e;
+}
+.delete {
+    cursor: pointer;
+    position: absolute;
+    top: 15px;
+    right: 30px;
+    width: 18px;
+    height: 18px;
+}
+
+.mainContainer {
+    margin: 200px auto 50px auto;
+    max-width: 1200px;
+    object-fit: cover;
+}
+.postList {
+    display: flex;
+    flex-wrap: wrap;
+}
+.addContent {
+    width: 95%;
+    height: 100%;
+    box-sizing: border-box;
+    border: 5px dashed #00000020;
+    border-radius: 10%;
+
+    cursor: pointer;
+}
+.addIcon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 0 0 0;
+
+    height: 100%;
+    font-size: 5vw;
+    color: #00000020;
+}
+.item {
+    width: 25%;
+    height: 25vw;
+    max-height: 300px;
+    box-sizing: border-box;
+    padding: 1rem 0.5rem 1rem 0.5rem;
+}
+.content {
+    width: 95%;
+    height: 100%;
+    overflow: hidden;
+    box-shadow: 3px 5px 10px 0 gray;
+    box-sizing: border-box;
+    background-color: lightyellow;
+
+    cursor: pointer;
+}
+.usernameDate {
+    font-size: 1vw;
+    color: #f1d57c;
+    margin: 0 0 0 0;
+    padding-top: 1vw;
+}
+.username {
+    float: left;
+    padding-left: 0.5vw;
+}
+.date {
+    float: right;
+    padding-right: 0.5vw;
+}
+.title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 10px 0 10px;
+    height: 75%;
+    font-size: 1.5vw;
+    word-break: keep-all;
+}
