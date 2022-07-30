@@ -9,6 +9,7 @@ import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 @Getter
 @MappedSuperclass
@@ -16,8 +17,8 @@ import java.time.format.DateTimeFormatter;
 public class Timestamped {
 
 	@CreatedBy
-	private String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+	private String createdAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss", Locale.KOREA));
 
 	@LastModifiedDate
-	private String modifiedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+	private String modifiedAt = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss", Locale.KOREA));
 }
