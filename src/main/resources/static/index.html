@@ -38,22 +38,6 @@
         return arr.join('');
 	}
 
-    // 비밀번호 일치 확인하기
-	function checkPassword(id, password) {
-        $(".checkPassword").off("click").click(function () {
-			let checkPassword = getPassword(4, 8);
-            if(checkPassword === password) {
-                $('.editing').addClass('on');
-                $('.details').removeClass('on');
-                $("input").val('');
-                $('.detailsPasswordArea').removeClass("on");
-                addEdit(id);
-            }else {
-				alert("비밀번호가 일치하지 않습니다");
-			}
-		})
-	}
-
 	////////////////////////////////////////////////////////////////////////
 
 	$(document).ready(function () {
@@ -130,21 +114,43 @@
 				let username = response["username"];
 				let title = response["title"];
 				let memo = response["memo"];
-                let password = response["password"];
-                addDetails(id, username, title, memo, password);
+                addDetails(id, username, title, memo);
             }
         })
     }
     // 메모 상세 모달창으로 전달합니다.
-    function addDetails(id, username, title, memo, password) {
+    function addDetails(id, username, title, memo) {
         $(`.detailsTitle`).text(title);
         memo = memo.replaceAll("\n", "<br>");
         memo = memo.replaceAll(" ", "&nbsp;");
         $(`.detailsMemo`).html(memo);
         $(`.detailsUsername`).text(username);
-        checkPassword(id, password);
+
+        $(".checkPassword").off("click").click(function () {
+            checkPassword(id, getPassword(4, 8));
+        })
     }
-    // 수정 버튼을 눌렀을 때, 기존 작성 내용을 textarea 에 전달합니다.
+
+    // 비밀번호 일치 확인하기
+    function checkPassword(id, password) {
+        $.ajax({
+            type: 'GET',
+            url: `api/postit/${id}/${password}`,
+            success: function (response) {
+                if (response) {
+                    $('.editing').addClass('on');
+                    $('.details').removeClass('on');
+                    $("input").val('');
+                    $('.detailsPasswordArea').removeClass("on");
+                    addEdit(id);
+                } else {
+                    alert("비밀번호가 일치하지 않습니다");
+                }
+            }
+        })
+    }
+
+    // 비밀번호가 일치할 때, 기존 작성 내용을 textarea 에 전달합니다.
     function addEdit(id) {
         let title = $(`#${id}-title`).text();
         let memo = $(`.detailsMemo`).html();

@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @RestController
@@ -30,6 +31,12 @@ public class PostitController {
 	@GetMapping("/api/postit/{id}")
 	public Postit detailPostit(@PathVariable Long id) {
 		return postitRepository.findById(id).orElse(null);
+	}
+
+	@GetMapping("api/postit/{id}/{password}")
+	public Boolean  checkPassword(@PathVariable Long id, @PathVariable String password) {
+		Postit a = postitRepository.findById(id).orElse(null);
+		return Objects.equals(Objects.requireNonNull(a).getPassword(), password);
 	}
 
 	@PatchMapping("/api/postit/{id}")
