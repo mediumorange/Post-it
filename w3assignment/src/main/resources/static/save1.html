@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns="http://www.w3.org/1999/html">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Post-it</title>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500&display=swap" rel="stylesheet">
+
+	<link href="{{ url_for('static', filename='index.css') }}" rel="stylesheet">
+
+	<style>
+        * {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        button {
+            cursor: pointer;
+        }
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 30;
+            min-height: 4vw;
+            box-shadow: inset 0 -20px 20px 0 #00000020;
+            background-color: white;
+        }
+
+        .posting {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0; right: 0; bottom: 0; left: 0;
+        }
+        .posting.on {
+            display: flex;
+        }
+        .postingBackground{
+            position: fixed;
+            background-color: rgba(0, 0, 0, 0.50);
+            top: 0; right: 0; bottom: 0; left: 0;
+        }
+        .postingCard {
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 50vw;
+            height: 500px;
+            border-radius: 20px;
+        }
+        .postingTop {
+            display: flex;
+            width: 95%;
+        }
+        .titleArea {
+            resize: none;
+            box-sizing: border-box;
+            padding: 20px 20px 0 20px;
+            border-radius: 10px;
+            width: 95%;
+            margin-bottom: 10px;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+        .nameArea {
+            resize: none;
+            box-sizing: border-box;
+            padding: 5px 10px 0 10px;
+            border-radius: 5px;
+            height: 30px;
+            width: 155px;
+        }
+        .passwordArea {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .password {
+            width: 30px;
+            height: 30px;
+            border: 1px solid lightgray;
+            border-radius: 3px;
+            text-align: center;
+            font-size: 1.3rem;
+            margin-right: 2px;
+        }
+        .memoArea {
+            resize: none;
+            box-sizing: border-box;
+            padding: 20px;
+            border-radius: 10px;
+            width: 95%;
+            height: 50%;
+        }
+        .buttonPosition {
+            width: 100%;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .cancelButton {
+            width: 25%;
+            height: 60px;
+            margin-right: 10px;
+            border: 1px solid;
+            border-radius: 10px;
+            background-color: white;
+        }
+        .cancelButton:hover {
+            background-color: #00000010;
+        }
+        .postButton {
+            width: 30%;
+            height: 60px;
+            border: 1px solid;
+            border-radius: 10px;
+            background-color: lightsalmon;
+        }
+        .postButton:hover {
+            background-color: #f78a5e;
+        }
+
+        .details {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0; right: 0; bottom: 0; left: 0;
+        }
+        .details.on {
+            display: flex;
+        }
+        .detailsBackground {
+            position: fixed;
+            background-color: rgba(0, 0, 0, 0.50);
+            top: 0; right: 0; bottom: 0; left: 0;
+        }
+        .detailsCard {
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 50vw;
+            height: 500px;
+            border-radius: 20px;
+        }
+        .detailsUsername {
+            position: absolute;
+            top: 10px;
+            left: 30px;
+        }
+        .detailsTitle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 10px 0 10px;
+            height: 75%;
+            font-size: 1.5vw;
+            word-break: keep-all;
+        }
+        .detailsMemo {
+            overflow-y: scroll;
+            padding: 20px;
+            border-radius: 10px;
+            width: 95%;
+            height: 65%;
+        }
+        .detailsMemo::-webkit-scrollbar {
+            display: none;
+        }
+        .detailsEdit {
+            cursor: pointer;
+            position: absolute;
+            top: 15px;
+            right: 30px;
+            width: 18px;
+            height: 18px;
+        }
+        .detailsPasswordArea {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 20px;
+        }
+        .detailsPasswordArea.on {
+            display: flex;
+        }
+        .detailsPassword {
+            width: 30px;
+            height: 30px;
+            border: 1px solid lightgray;
+            border-radius: 3px;
+            text-align: center;
+            font-size: 1.3rem;
+            margin-right: 2px;
+        }
+        .checkPassword {
+            width: 40px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .checkPassword:hover {
+            color: gray;
+        }
+        .checkPassword:active {
+            color: black;
+        }
+
+        .editing {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            top: 0; right: 0; bottom: 0; left: 0;
+        }
+        .editing.on {
+            display: flex;
+        }
+        .editingBackground{
+            position: fixed;
+            background-color: rgba(0, 0, 0, 0.50);
+            top: 0; right: 0; bottom: 0; left: 0;
+        }
+        .editingCard {
+            background-color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            width: 50vw;
+            height: 500px;
+            border-radius: 20px;
+        }
+        .editingTop {
+            display: flex;
+            width: 95%;
+        }
+        .titleArea {
+            resize: none;
+            box-sizing: border-box;
+            padding: 20px 20px 0 20px;
+            border-radius: 10px;
+            width: 95%;
+            margin-bottom: 10px;
+            margin-right: 10px;
+            font-size: 1rem;
+        }
+        .nameFixed {
+            box-sizing: border-box;
+            padding: 5px 10px 0 10px;
+            height: 30px;
+            width: 190px;
+            font-size: 1vw;
+        }
+        .memoArea {
+            resize: none;
+            box-sizing: border-box;
+            padding: 20px;
+            border-radius: 10px;
+            width: 95%;
+            height: 50%;
+        }
+        .buttonPosition {
+            width: 100%;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .cancelButton {
+            width: 25%;
+            height: 60px;
+            margin-right: 10px;
+            border: 1px solid;
+            border-radius: 10px;
+            background-color: white;
+        }
+        .cancelButton:hover {
+            background-color: #00000010;
+        }
+        .postButton {
+            width: 30%;
+            height: 60px;
+            border: 1px solid;
+            border-radius: 10px;
+            background-color: lightsalmon;
+        }
+        .postButton:hover {
+            background-color: #f78a5e;
+        }
+
+        .mainContainer {
+            margin: 200px auto 50px auto;
+            max-width: 1200px;
+            object-fit: cover;
+        }
+        .postList {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .addContent {
+            width: 95%;
+            height: 100%;
+            box-sizing: border-box;
+            border: 5px dashed #00000020;
+            border-radius: 10%;
+
+            cursor: pointer;
+        }
+        .addIcon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 0 0 0;
+
+            height: 100%;
+            font-size: 5vw;
+            color: #00000020;
+        }
+        .item {
+            width: 25%;
+            height: 25vw;
+            max-height: 300px;
+            box-sizing: border-box;
+            padding: 1rem 0.5rem 1rem 0.5rem;
+        }
+        .content {
+            width: 95%;
+            height: 100%;
+            overflow: hidden;
+            box-shadow: 3px 5px 10px 0 gray;
+            box-sizing: border-box;
+            background-color: lightyellow;
+
+            cursor: pointer;
+        }
+        .usernameDate {
+            font-size: 1vw;
+            color: #f1d57c;
+            margin: 0 0 0 0;
+            padding-top: 1vw;
+        }
+        .username {
+            float: left;
+            padding-left: 0.5vw;
+        }
+        .date {
+            float: right;
+            padding-right: 0.5vw;
+        }
+        .title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 10px 0 10px;
+            height: 75%;
+            font-size: 1.5vw;
+            word-break: keep-all;
+        }
+	</style>
+	<script>
+        // 미리 작성된 영역 - 수정하지 않으셔도 됩니다.
+        // 사용자가 내용을 올바르게 입력하였는지 확인합니다.
+        function isValidContents(contents) {
+            if (contents === '') {
+                alert('내용을 입력해주세요');
+                return false;
+            }
+            if (contents.trim().length > 140) {
+                alert('공백 포함 140자 이하로 입력해주세요');
+                return false;
+            }
+            return true;
+        }
+
+        // 비밀번호 입력 받아오기
+        function getPassword(a, b) {
+            let arr = [];
+            let j=0;
+            for(let i=a; i < b; i++) {
+                arr[j] = $("input[name=char"+i+"]").val();
+                console.log(i, j, arr)
+                if(arr[j] === '') {
+                    alert('비밀번호를 입력해주세요');
+                    return false;
+                }
+                j++;
+            }
+            return arr.join('');
+        }
+
+        // 비밀번호 일치 확인하기
+        function checkPassword() {
+            $(".checkPassword").click(function () {
+                let password = getPassword(4, 8);
+                if(password === "7322") {
+                    $('.editing').addClass('on');
+                    $('.details').removeClass('on');
+                }else {
+                    alert("비밀번호가 일치하지 않습니다");
+                    return false;
+                }
+            });
+        }
+
+        // 수정 버튼을 눌렀을 때, 기존 작성 내용을 textarea 에 전달합니다.
+        function editPost(id) {
+            let title = $(`#${id}-title`).text();
+            let memo = $(`#${id}-memo`).text();
+            $(`#${id}-titleArea`).val(title);
+            $(`#${id}-memoArea`).val(memo);
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+
+        $(document).ready(function () {
+            // HTML 문서를 로드할 때마다 실행합니다.
+            getPosts();
+        })
+
+        // 메모를 불러와서 보여줍니다.
+        function getPosts() {
+            // 1. 기존 메모 내용을 지웁니다.
+            // 2. 메모 목록을 불러와서 HTML로 붙입니다.
+            $.ajax({
+                type: 'GET',
+                url: '/api/postit',
+                success: function (response) {
+                    for (let i = 0; i < response.length; i++) {
+                        let message = response[i];
+                        message = message.replace(/\n/ig, "</br>");
+                        message = message.replace(/ /ig, "&nbsp");
+                        let id = message['id'];
+                        let username = message['username'];
+                        let title = message['title'];
+                        let memo = message['memo'];
+                        let modifiedAt = message['modifiedAt'];
+                        addPostList(id, username, title, memo, modifiedAt);
+                    }
+                }
+            })
+        }
+
+        // 메모 하나를 HTML로 만들어서 body 태그 내 원하는 곳에 붙입니다.
+        function addPostList(id, username, title, memo, modifiedAt) {
+            // 1. HTML 태그를 만듭니다.
+            let tempHtml1 = `<div class="item">
+							<div class="content" onclick='$("#${id}-detials").addClass("on"); getDetails("${id}")'>
+								<div class="usernameDate">
+									<div id="${id}-username" class="username">${username}</div>
+									<div id="${id}-date" class="date">${modifiedAt}</div>
+								</div>
+								<p id="${id}-title" class="title">${title}</p>
+								</div>
+							</div>`;
+            let tempHtml2  = `<!--------------------메모 모달창-------------------->
+						<div class="details" id="${id}-details">
+							<div class="detailsBackground" onclick='$("#${id}-details").removeClass("on"); hideCheckPassword("${id}}")'></div>
+							<div class="detailsCard">
+								<div class="titleMemo">
+									<div class="detailsTitle">${title}</div>
+								</div>
+								<div class="detailsMemo" id="${id}-memo">${memo}</div>
+								<img class="detailsEdit" src="images/edit.png" onclick="$('#${id}-detailsPasswordArea').toggleClass('on')">
+								<div class="detailsUsername">${username}</div>
+								<div class="detailsPasswordArea" id="${id}-detailsPasswordArea">
+									<input maxlength="1" type="tel" class="detailsPassword" name="char4" data-index="0"
+									   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+									<input maxlength="1" type="tel" class="detailsPassword" name="char5" data-index="1"
+									   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+									<input maxlength="1" type="tel" class="detailsPassword" name="char6" data-index="2"
+									   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+									<input maxlength="1" type="tel" class="detailsPassword" name="char7" data-index="3"
+									   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+									<div class="checkPassword" onclick="checkPassword()">확인</div>
+								</div>
+							</div>
+						</div>
+						<!--------------------메모 모달창 end-------------------->
+						<!--------------------수정 모달창-------------------->
+						<div class="editing">
+							<div class="editingBackground" onclick='$("#${id}-editing").removeClass("on")'></div>
+							<div class="editingCard">
+								<div class="editingTop">
+							<textarea class="titleArea" maxlength="25" placeholder="제목을 입력해주세요 (30글자)" name="title" id="${id}-titleArea"
+									  onKeyPress="javascript: if (event.keyCode==13) return false;"></textarea>
+									<div class="nameFixed">${username}</div>
+								</div>
+								<textarea class="memoArea" placeholder="내용을 입력하세요" name="memo" id="${id}-memoArea"></textarea>
+								<div class="buttonPosition">
+									<button class="cancelButton" onclick="window.location.reload()">취소</button>
+									<button class="postButton" onclick='writePost()'>Post It !</button>
+								</div>
+							</div>
+						</div>
+						<!--------------------수정 모달창 end-------------------->`;
+            // 2. #cards-box 에 HTML을 붙인다.
+            $('.postList').append(tempHtml1);
+            $("body").append(tempHtml2);
+        }
+
+        // 메모를 생성합니다.
+        function writePost() {
+            // 1. 작성한 메모를 불러옵니다.
+            let title = $('#title').val();
+            let memo = $('textarea[name="memo"]').val();
+            let username = $('textarea[name="username"]').val();
+            let password = getPassword(0, 4);
+            // 2. 작성한 메모가 올바른지 isValidContents 함수를 통해 확인합니다.
+            if (isValidContents(memo) === false || isValidContents(username) === false) {
+                return;
+            }
+            // 4. 전달할 data JSON으로 만듭니다.
+            let data = {'username': username, 'password': password, 'title': title, 'memo': memo};
+            // 5. POST /api/postit 에 data를 전달합니다.
+            $.ajax({
+                type: "POST",
+                url: "/api/postit",
+                contentType: "application/json", // JSON 형식으로 전달함을 알리기
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('메시지가 성공적으로 작성되었습니다.');
+                    window.location.reload();
+                }
+            });
+        }
+
+        // ID에 맞는 메모를 불러와서 보여줍니다.
+        function getDetails(id) {
+            // 1. 기존 메모 내용을 지웁니다.
+            // 2. 메모 목록을 불러와서 HTML로 붙입니다.
+            $.ajax({
+                type: 'GET',
+                url: `/api/postit/${id}`,
+                success: function (response) {
+                    let id = response.id;
+                    let username = response.username;
+                    let title = response.title;
+                    let memo = response.memo;
+                    addPostDetail(id, username, title, memo);
+
+                    let temphtml = ``
+                }
+            })
+        }
+
+        // 메모를 수정합니다.
+        function submitEdit(id) {
+            // 1. 작성 대상 메모의 username과 memo 를 확인합니다.
+            let title = $(`#${id}-titleArea`).val();
+            let memo = $(`#${id}-memoArea`).val();
+            // 2. 작성한 메모가 올바른지 isValidContents 함수를 통해 확인합니다.
+            if (isValidContents(memo) === false) {
+                return;
+            }
+            // 3. 전달할 data JSON으로 만듭니다.
+            let data = {'title': title, 'memo': memo};
+            // 4. PUT /api/postit/{id} 에 data를 전달합니다.
+            $.ajax({
+                type: "PATCH",
+                url: `/api/postit/${id}`,
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('메시지 변경에 성공하였습니다.');
+                    window.location.reload();
+                }
+            });
+        }
+
+        // 메모를 삭제합니다.
+        function deleteOne(id) {
+            // 1. DELETE /api/postit/{id} 에 요청해서 메모를 삭제합니다.
+            $.ajax({
+                type: "DELETE",
+                url: `/api/postit/${id}`,
+                success: function (response) {
+                    alert('메시지 삭제에 성공하였습니다.');
+                    window.location.reload();
+                }
+            })
+        }
+        /////////////////////////////////////////////////////////////////////////////////////
+        // 생성시 비밀번호 input 다음으로 자동 넘기기
+        $(function() {
+            $("input").keyup (function () {
+                let charLimit = $(this).attr("maxlength");
+                if (this.value.length >= charLimit) {
+                    $(this).next("input").focus();
+                    return false;
+                }
+            }).focus (function () {
+                $(this).val('');
+                return false;
+            });
+        });
+
+        // 비밀번호 확인 숨기기
+        function hideCheckPassword(id) {
+            if($(`#${id}-details`).hasClass("on") === false) {
+                $(`#${id}-detailsPasswordArea`).removeClass("on");
+                return false;
+            }
+        }
+
+
+	</script>
+</head>
+
+<body>
+<!--------------------작성 모달창-------------------->
+<div class="posting">
+	<div class="postingBackground" onclick='$(".posting").removeClass("on")'></div>
+	<div class="postingCard">
+		<div class="postingTop">
+			<textarea class="titleArea" maxlength="25" placeholder="제목을 입력해주세요 (30글자)" name="title"
+					  onKeyPress="javascript: if (event.keyCode==13) return false;"></textarea>
+			<div class="namePassword">
+				<textarea class="nameArea" maxlength="10" placeholder="이름 (10글자)" id="username"
+						  onKeyPress="javascript: if (event.keyCode==13) return false;">익명의 포스트잇</textarea>
+				<div class="passwordArea">
+					<input maxlength="1" type="tel" class="password" name="char0" data-index="0"
+						   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+					<input maxlength="1" type="tel" class="password" name="char1" data-index="1"
+						   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+					<input maxlength="1" type="tel" class="password" name="char2" data-index="2"
+						   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+					<input maxlength="1" type="tel" class="password" name="char3" data-index="3"
+						   oninput="this.value = this.value.replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1')">
+				</div>
+			</div>
+		</div>
+		<textarea class="memoArea" placeholder="내용을 입력하세요" name="memo"></textarea>
+		<div class="buttonPosition">
+			<button class="cancelButton" onclick="window.location.reload()">취소</button>
+			<button class="postButton" onclick='writePost()'>Post It !</button>
+		</div>
+	</div>
+</div>
+<!--------------------작성 모달창 end-------------------->
+<div class="mainContainer">
+	<div id="post-box" class="postList">
+		<div class="item">
+			<div class="addContent" onclick='$(".posting").addClass("on")'>
+				<p class="addIcon">+</p>
+			</div>
+		</div>
+		<div class="item">
+			<div class="content" onclick='$(".details").addClass("on"); getDetails("${id}")'>
+				<div class="usernameDate">
+					<div id="${id}-username" class="username">41j2IApsfv</div>
+					<div id="${id}-date" class="date">22. 7. 26. 오후 7:25</div>
+				</div>
+				<p id="${id}-title" class="title">제목입니다</p>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

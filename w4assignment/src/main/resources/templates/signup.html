@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Sign Up</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
+		  integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+	<link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<style>
+    .btn:hover {
+        cursor: pointer;
+    }
+</style>
+<script>
+	function signup() {
+		let userId = $('input[name="userId"]').val();
+		let userName = $('input[name="userName"]').val();
+		let userPassword = $('input[name="userPassword"]').val();
+		let data = {'userId': userId, 'userName': userName, 'userPassword': userPassword};
+		$.ajax({
+			type: "POST",
+			url: "/users/signup",
+			contentType: "application/json", // JSON 형식으로 전달함을 알리기
+			data: JSON.stringify(data),
+			success: function (response) {
+				alert(response);
+				window.location.replace("/users/login");
+			},
+			error: function (response) {
+                console.log(response["responseJSON"]);
+			}
+		});
+	}
+</script>
+<body>
+<div class="container">
+	<form class="form-signin">
+		<p style="margin-top: 100px;">
+			<label for="username" class="sr-only">ID</label>
+			<input type="text" id="username" name="userId" class="form-control" placeholder="ID" required=""
+				   autofocus="">
+		</p>
+		<p>
+			<label for="username" class="sr-only">Name</label>
+			<input type="text" name="userName" class="form-control" placeholder="Username"
+				   required="">
+		</p>
+		<p>
+			<label for="password" class="sr-only">Password</label>
+			<input type="password" id="password" name="userPassword" class="form-control" placeholder="Password"
+				   required="">
+		</p>
+		<input name="_csrf" type="hidden" value="ec1d8ff4-e9d4-4f08-8fe0-7feb35344a1f">
+		<button class="btn btn-lg btn-primary btn-block" type="button" onclick="signup()">회원가입</button>
+	</form>
+</div>
+</body>
+</html>

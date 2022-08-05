@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Log in</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<meta name="description" content="">
+	<meta name="author" content="">
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet"
+		  integrity="sha384-/Y6pD6FV/Vv2HJnA6t+vslU6fwYXjCFtcEpHbNJ0lyAFsXTsjBbfaDjzALeQsN6M" crossorigin="anonymous">
+	<link href="https://getbootstrap.com/docs/4.0/examples/signin/signin.css" rel="stylesheet" crossorigin="anonymous">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+</head>
+<style>
+	.btn:hover {
+		cursor: pointer;
+	}
+	#signup_page {
+		background-color: white;
+		color: black;
+	}
+	#signup_page:hover {
+		background-color: #f1f1f1;
+	}
+</style>
+<script>
+    const href = location.href;
+    const queryString = href.substring(href.indexOf("?") + 1)
+    if (queryString === 'error') {
+        const errorDiv = document.getElementById('login-failed');
+        errorDiv.style.display = 'block';
+    }
+
+	function login() {
+        let userId = $('input[name="userId"]').val();
+        let userPassword = $('input[name="userPassword"]').val();
+        let data = {'userId': userId, 'userPassword': userPassword};
+        $.ajax({
+            type: "POST",
+            url: "/users/login",
+            contentType: "application/json", // JSON 형식으로 전달함을 알리기
+            data: JSON.stringify(data),
+            success: function (response, testStatus, request) {
+                const jwtAccessToken = request.getResponseHeader("Access-Token");
+                const jwtRefreshToken = request.getResponseHeader("Refresh-Token");
+
+                if (jwtAccessToken && jwtRefreshToken) {
+                    $.cookie("accessToken", jwtAccessToken, {path: "/"});
+                    $.cookie("refreshToken", jwtRefreshToken, {path: "/"});
+                    $.ajaxSetup({
+                        headers: {
+                            "Authorization": "Bearer " + jwtAccessToken
+                        }
+                    });
+                    window.location.href = "/main"
+                } else {
+                    window.location.href = '/users/login?error';
+                }
+            }
+        });
+    }
+</script>
+<body>
+<div class="container">
+	<div id="login-failed" style="display:none" class="alert alert-danger" role="alert">로그인에 실패하였습니다.</div>
+	<form class="form-signin">
+		<p style="margin-top: 100px;">
+			<label for="username" class="sr-only">ID</label>
+			<input type="text" id="username" name="userId" class="form-control" placeholder="ID" required=""
+				   autofocus="">
+		</p>
+		<p>
+			<label for="password" class="sr-only">Password</label>
+			<input type="password" id="password" name="userPassword" class="form-control" placeholder="Password"
+				   required="">
+		</p>
+		<input name="_csrf" type="hidden" value="ec1d8ff4-e9d4-4f08-8fe0-7feb35344a1f">
+		<button class="btn btn-lg btn-primary btn-block" type="button" onclick="login()">로그인</button>
+		<button class="btn btn-lg btn-primary btn-block" id="signup_page"
+				onclick="location.replace('/users/signup')">회원가입</button>
+	</form>
+</div>
+</body>
+</html>
